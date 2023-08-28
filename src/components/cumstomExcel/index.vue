@@ -72,10 +72,10 @@
       },
     },
     created() {
-      this.mergeOption();
+      // this.mergeOption();
     },
     mounted() {
-      initSheet(this.option)
+      // initSheet(this.option)
 
     },
     methods: {
@@ -96,7 +96,8 @@
           workbookDestroyAfter: this.workbookDestroyAfter,
           scroll: throttle(this.sheetScroll, 300),
           sheetActivate: this.sheetActivate,
-          cellUpdated: this.cellUpdated
+          cellUpdated: this.cellUpdated,
+
         }
       },
       getInstance() {
@@ -106,8 +107,30 @@
       exportExcel() {
         exportExcel(luckysheet, this.option.name)
       },
-      tableToExcel() {
-        tableToExcel(this.sheetData.excelHeader, this.sheetData.excelData);
+      tableToExcel(data, option = {}) {
+      const { total, records, header } = data;
+          let _option = {
+          ...option,
+            row: total + 10, //根据总行数多增加10行
+        column: header.length
+
+      }
+
+      _option.hook = {
+        workbookCreateBefore: this.workbookCreateBefore,
+        workbookCreateAfter: this.workbookCreateAfter,
+        workbookDestroyBefore: this.workbookDestroyBefore,
+        workbookDestroyAfter: this.workbookDestroyAfter,
+        scroll: throttle(this.sheetScroll, 300),
+        sheetActivate: this.sheetActivate,
+        cellUpdated: this.cellUpdated,
+
+      }
+
+
+
+
+        tableToExcel(header, records, _option);
       },
       renderExcel(data) {
         window.luckysheet.destroy()
@@ -204,7 +227,7 @@
         this.$emit('sheetActivate', event)
       },
       cellUpdated() {
-        // console.log('cellUpdated: ');
+        console.log('cellUpdated: ',arguments);
 
       },
       setRangeVal(data, cb) {

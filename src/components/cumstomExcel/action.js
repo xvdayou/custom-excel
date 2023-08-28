@@ -5,7 +5,7 @@ import Excel from "exceljs";
  * 将excel文件导入excel组件
  * @param {*} file 导入的excel文件
  */
-export const transformFileToLucky = file => {
+export const transformFileToLucky = (file, option) => {
   le.transformExcelToLucky(
     file,
     function(exportJson, luckysheetfile) {
@@ -15,6 +15,7 @@ export const transformFileToLucky = file => {
       console.log("transformFileToLucky  luckysheetfile: ", luckysheetfile);
 
       window.luckysheet.create({
+        ...option,
         container: "luckysheet", // luckysheet is the container id
         showinfobar: false,
         data: exportJson.sheets
@@ -29,20 +30,26 @@ export const transformFileToLucky = file => {
  * 将表格数据回显到excel中
  * @param {*} header 表格头部数组
  * @param {*} tableData 表格数据
+ * @param {*} total 表体总长度
  */
-export const tableToExcel = async (header, tableData) => {
+export const tableToExcel = async (header, tableData, option) => {
   // 创建工作簿
   const workbook = new Excel.Workbook();
   // 添加工作表
   const worksheet = workbook.addWorksheet("Sheet1");
   // 添加列标题并定义列键
+
+  console.log("head", [...header]);
+  console.log("tableData", [...tableData]);
+
   worksheet.columns = [...header];
   // 添加多行数据
   worksheet.addRows([...tableData]);
   // 写入 buffer
   const buffer = await workbook.xlsx.writeBuffer();
   const file = new File([buffer], "xxx.xlsx");
-  transformFileToLucky(file);
+
+  transformFileToLucky(file, option);
 };
 
 export const getFormatterExcelData = file => {

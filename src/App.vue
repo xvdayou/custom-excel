@@ -1,11 +1,11 @@
 <template>
   <div id="app">
     <div id="mySheet">
-      <CustomExcel v-if="config" :config="config" :sheetData="sheetData" ref="luckySheet" @sheetScroll="handleScroll"
+      <CustomExcel  :config="config" :sheetData="sheetData" ref="luckySheet" @sheetScroll="handleScroll"
         @sheetActivate="sheetActivate" @workbookCreateAfter="workbookCreateAfter" />
     </div>
 
-    <div class="wrapper" v-show="false">
+    <div class="wrapper">
       <div>
         <label for="">
           表数量:
@@ -48,10 +48,7 @@
 
   import CustomExcel from './components/cumstomExcel';
   import { getFormatterExcelData, celldataToTrans } from './components/cumstomExcel/action.js';
-  import { lazyData, initData, allData, getMockData, getPageData, simpleData, simpleData1, getRowsData } from './mock';
-  import { throttle } from './components/cumstomExcel/utils/throttle.js';
-
-
+  import { lazyData, initData, allData, getMockData, getPageData, simpleData, simpleData1, getRowsData, gediData } from './mock';
 
   export default {
     name: 'app',
@@ -70,116 +67,146 @@
         sheetData: {},
         excelData: null,
         isCellUpdateDone: false,
-        range: [5, 10]
+        range: [5, 10],
+        data: null
 
 
       }
     },
-    methods: {
+  methods: {
 
-      handleNextPage() {
-        this.batchesRender();
-      },
+    handleNextPage() {
+      this.batchesRender();
+    },
+    renderSheet() {
+      // this.$refs.luckySheet.renderExcel(this.getOption())
+      this.$refs.luckySheet.renderExcel(allData)
+    },
 
-      renderSheet() {
-        // this.$refs.luckySheet.renderExcel(this.getOption())
-        this.$refs.luckySheet.renderExcel(allData)
+    exportExcel() {
+      this.$refs.luckySheet.exportExcel()
+    },
+    tableToExcel() {
+      this.$refs.luckySheet.tableToExcel()
+    },
 
-      },
-
-      exportExcel() {
-        this.$refs.luckySheet.exportExcel()
-      },
-      tableToExcel() {
-        this.$refs.luckySheet.tableToExcel()
-      },
-
-
-      clear() {
-        this.pageNum = 1;
-        this.$refs.luckySheet.clearAllCell()
-      },
-      toJson() {
-        const jsonData = this.$refs.luckySheet.toJson();
-        console.log('jsonData', jsonData);
-        console.log(celldataToTrans(jsonData.data[0].celldata));
-      },
-      batchesRender() {
-        let data = JSON.parse(JSON.stringify(lazyData))
-        data = getPageData(data, this.pageSize * 52, this.pageNum);
-        if (data.celldata.length > 0) {
-          this.pageNum++
-          console.log('batchesRender', data);
-          this.$refs.luckySheet.lazyLoadAndRefresh(data, 20);
-          // this.batchesRender()
-
-          // throttle(this.batchesRender(), 300)
-
-          // setTimeout(() => {
-          //   this.batchesRender()
-          // }, 300)
-
-        }
-
-      },
-
-      setRangeVal() {
-        let data = JSON.parse(JSON.stringify(lazyData))
-        data = getRowsData(data, this.range);
-        const [start, end] = this.range;
-        this.range = [end, end + 15];
-        console.log('data.celldata', data.celldata);
-        if (data.celldata.length > 0) {
-          this.pageNum++
-          this.$refs.luckySheet.setRangeVal(data, () => {
-            console.log('setRangeVal success');
-            // setTimeout(() => {
-            //   this.setRangeVal();
-            // }, 10); // 延迟100毫秒
-
-          });
-        }
-
-      },
-      refresh() {
-        console.log('excelJson', excelJson);
-        // this.$refs.luckySheet.refresh(mockData);
-        this.sheetData = getMockData(this.row, this.col);
-        console.log('renderExcel', this.sheetData);
-        const startTime = performance.now()
-        // this.$refs.luckySheet.updataSheet(this.sheetData)
-        this.$refs.luckySheet.updataSheet(simpleData1)
-      },
-      updata() {
-        this.$refs.luckySheet.updataSheet(allData)
-      },
-      handleScroll(event) {
-        console.log("handleScroll", event);
-        this.setRangeVal()
-
-      },
-      transToData() {
-        this.$refs.luckySheet.updataSheet(simpleData1)
-      },
-      workbookCreateAfter() {
-        console.log('workbookCreateAfter: ');
-        // this.$refs.luckySheet.lazyLoadAndRefresh(simpleData, 1);
+    clear() {
+      this.pageNum = 1;
+      this.$refs.luckySheet.clearAllCell()
+    },
+    toJson() {
+      const jsonData = this.$refs.luckySheet.toJson();
+      console.log('jsonData', jsonData);
+      console.log(celldataToTrans(jsonData.data[0].celldata));
+    },
+    batchesRender() {
+      let data = JSON.parse(JSON.stringify(lazyData))
+      data = getPageData(data, this.pageSize * 52, this.pageNum);
+      if (data.celldata.length > 0) {
+        this.pageNum++
+        console.log('batchesRender', data);
+        this.$refs.luckySheet.lazyLoadAndRefresh(data, 20);
+        // this.batchesRender()
+        // throttle(this.batchesRender(), 300)
         // setTimeout(() => {
-        //   this.$refs.luckySheet.lazyLoadAndRefresh(simpleData1, 2);
-        // }, 1000)
+        //   this.batchesRender()
+        // }, 300)
+      }
 
-      },
-      sheetActivate() { }
+    },
+    setRangeVal() {
+      let data = JSON.parse(JSON.stringify(lazyData))
+      data = getRowsData(data, this.range);
+      const [start, end] = this.range;
+      this.range = [end, end + 15];
+      console.log('data.celldata', data.celldata);
+      if (data.celldata.length > 0) {
+        this.pageNum++;
+        this.$refs.luckySheet.setRangeVal(data, () => {
+          console.log('setRangeVal success');
+          // setTimeout(() => {
+          //   this.setRangeVal();
+          // }, 10); // 延迟100毫秒
+        });
+      }
+
+    },
+    refresh() {
+      console.log('excelJson', excelJson);
+      // this.$refs.luckySheet.refresh(mockData);
+      this.sheetData = getMockData(this.row, this.col);
+      console.log('renderExcel', this.sheetData);
+      const startTime = performance.now()
+      // this.$refs.luckySheet.updataSheet(this.sheetData)
+      this.$refs.luckySheet.updataSheet(simpleData1)
+    },
+    updata() {
+      this.$refs.luckySheet.updataSheet(allData)
+    },
+    handleScroll(event) {
+      console.log("handleScroll", event);
+      this.setRangeVal()
+
+    },
+    transToData() {
+      this.$refs.luckySheet.updataSheet(simpleData1)
+    },
+    workbookCreateAfter() {
+      console.log('workbookCreateAfter: ');
+      // this.$refs.luckySheet.lazyLoadAndRefresh(simpleData, 1);
+      // setTimeout(() => {
+      //   this.$refs.luckySheet.lazyLoadAndRefresh(simpleData1, 2);
+      // }, 1000)
+
+    },
+    sheetActivate() { },
+
+    getGediData() {
+      //   const param = { "entityId": 7525100, "query": "", "queryType": "sql", "needHeader": true, "pageNo": 1, "pageSize": 20 }
+      //   fetch('http://10.150.110.89:6100/admin/global/cdEntity/tlistNew', {
+      //     method: "POST",
+      //        headers: {
+      //     'Content-Type': 'application/json', // 设置请求头
+      //     // 可以添加其他请求头信息
+      //   },
+      //   body: JSON.stringify(param),
+      //   }).then(res => res.json()).then(data => {
+      //     console.log(data)
+      //   })
+      // }
+      const data = gediData.result;
+      data.header = data.header.map(item => {
+        return {
+          ...item,
+          header: item.name,
+          key: item.code
+        }
+      })
+      console.log('data', this.data);
+      this.$refs.luckySheet.tableToExcel(data)
+
+
+
+
+
+
     },
 
     created() {
       this.config = initData;
-
       console.log('initData', initData);
       console.log('lazyData', lazyData);
+
     },
 
 
+
+
+
+  },
+  mounted () {
+    this.getGediData()
+  },
   }
 </script>
 
@@ -197,7 +224,7 @@
 
   #mySheet {
     width: 100%;
-    height: 100%;
+    height: 600px;
 
   }
 
