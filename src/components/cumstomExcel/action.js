@@ -126,20 +126,6 @@ function dataRendSheet(excelHeader, excelData) {
   }
 }
 
-export function refresh(sheetData) {
-  // 渲染工作表的单元格数据
-  const celldata = sheetData.sheets[0].celldata;
-  console.log("cellData", celldata);
-  celldata.forEach(cell => {
-    const { r, c, v } = cell;
-    if (v.hasOwnProperty("v")) {
-      // 如果单元格数据包含 "v" 属性，则使用 setCellValue 设置单元格内容;
-      window.luckysheet.setCellValue(r, c, v.v);
-    }
-    // 如果您还有其他样式信息，可以在此处使用 Luckysheet 提供的 API 方法设置
-  });
-}
-
 /**
  *
  * @param {*} sheetData
@@ -302,4 +288,74 @@ export function celldataToTrans(celldata) {
   );
   console.log("twoDimensionalData final", twoDimensionalData);
   return twoDimensionalData;
+}
+/**
+ *
+ * @param {*} responseData  后端返回数据  http://10.150.172.60/admin/doc.html  admin/global/cdEntity/tlistNew
+ * @returns
+ */
+export function convertToSheetData(responseData) {
+  const sheetData = [];
+
+  // 处理表头数据
+  const header = responseData.header;
+  const headerRow = header.map((col, index) => {
+    return {
+      r: 0,
+      c: index,
+      v: {
+        m: col.name,
+        ct: {
+          fa: "General",
+          t: "g"
+        },
+        v: col.name
+      }
+    };
+  });
+
+  // 第一页的时候需要表头 之后需要表体就行
+  if (responseData.current === 1) sheetData.push(...headerRow);
+
+  // 计算起始行的位置
+  const pageSize = responseData.size;
+  const currentPage = responseData.current;
+  const startRow = (currentPage - 1) * pageSize;
+
+  // 处理每一行记录数据
+  const records = responseData.records;
+  records.forEach((record, rowIndex) => {
+    const recordRow = header.map((col, index) => {
+      const value = record[col.code];
+      return {
+        r: startRow + rowIndex + 1,
+        c: index,
+        v: {
+          m: value !== null ? String(value) : "",
+          ct: {
+            fa: "General",
+            t: "g"
+          },
+          v: value !== null ? String(value) : ""
+        }
+      };
+    });
+    sheetData.push(...recordRow);
+  });
+
+  const excelData = {
+    info: {
+      name: "",
+      row: Math.max(50, records.length + 1),
+      column: Math.max(20, header.length)
+    },
+    sheets: [
+      {
+        name: "Sheet1",
+        celldata: sheetData
+      }
+    ]
+  };
+
+  return excelData;
 }
