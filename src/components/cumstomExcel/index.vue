@@ -147,7 +147,8 @@ export default {
           }
         ]
       }
-      initSheet(option)
+      initSheet(option);
+      this.curScrollTop = 0;
     },
     toJson() {
       return toJson()
